@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">FitSound</string>
+    <string name="ingrese_minutos">Ingrese minutos</string>
+    <string name="cardio">Cardio</string>
+    <string name="fuerza">Fuerza</string>
+    <string name="flexibilidad">Flexibilidad</string>
+</resources>
