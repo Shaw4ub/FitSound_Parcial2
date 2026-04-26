@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
         //RESTAURAR ESTADO SI EXISTE (PARTE DE: HU5)
         if (savedInstanceState !=null){
@@ -129,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
         //Iniciarlizar MediaPlayer HU3
-        mediaPlayer = mediaPlayer.create(this, R.raw.exito);
+        mediaPlayer = MediaPlayer.create(this, R.raw.exito);
 
         // LISTENER DE BOTONES
         btnCardio.setOnClickListener(v -> registrar("cardio"));
@@ -255,10 +256,70 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     //GRAFICA DE PASTEL
+    private void actualizarPastel(){
+        float total = cardioMin + fuerzaMin + flexibilidadMin;
 
+        if(total == 0f){
+            pieChart.setNoDataText("Sin datos aun");
+            pieChart.clear();
+            pieChart.invalidate();
+            return;
+        }
+
+        List<PieEntry> entries = new ArrayList<>();
+        if (cardioMin > 0) entries.add(new PieEntry(cardioMin, "Cardio"));
+        if (fuerzaMin > 0) entries.add(new PieEntry(fuerzaMin, "Fuerza"));
+        if (flexibilidadMin > 0) entries.add(new PieEntry(flexibilidadMin, "Flexibilidad"));
+
+        PieDataSet dataSet = new PieDataSet(entries, "");
+        dataSet.setColors(
+                0xFF4CAF50,
+                0xFF2196F3,
+                0xFFFF9800
+        );
+
+        PieData data = new PieData(dataSet);
+        pieChart.setData(data);
+        pieChart.setUsePercentValues(true);
+        pieChart.getDescription().setEnabled(true);
+        pieChart.setDrawHoleEnabled(true);
+        pieChart.setHoleRadius(35f);
+        pieChart.animateY(500);
+        pieChart.invalidate();
+    }
 
     //GRAFICA DE LINEAS
 
+    private void actualizarLineas() {
+        List<Entry> entries = new ArrayList<>();
+        for (int i = 0; i < historialTotales.size(); i++) {
+            entries.add(new Entry(i, historialTotales.get(i)));
+        }
+
+        if (entries.isEmpty()) {
+            lineChart.setNoDataText("Sin registros aún");
+            lineChart.clear();
+            lineChart.invalidate();
+            return;
+        }
+
+        LineDataSet dataSet = new LineDataSet(entries, "Total acumulado");
+        dataSet.setColor(0xFF6A4BC4);
+        dataSet.setCircleColor(0xFF6A4BC4);
+        dataSet.setLineWidth(2f);
+        dataSet.setCircleRadius(5f);
+        dataSet.setDrawValues(true);
+        dataSet.setValueTextSize(11f);
+        dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+
+        LineData data = new LineData(dataSet);
+        lineChart.setData(data);
+        lineChart.getDescription().setEnabled(false);
+        lineChart.getXAxis().setGranularity(1f);
+        lineChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+        lineChart.animateX(400);
+        lineChart.invalidate();
+    }
 
     // CALLBACK DEL MAPA
     @Override
@@ -283,6 +344,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         outState.putFloat(KEY_FLEX,flexibilidadMin);
 
         outState.putInt(KEY_SPINNER_POS, spinnerGrafico.getSelectedItemPosition());
+
+        float[] hist = new float[historialTotales.size()];
+        for (int i = 0; i < historialTotales.size(); i++){
+            hist[i] = historialTotales.get(i);
+        }
+        outState.putFloatArray(KEY_HISTORIAL, hist);
     }
 
 
