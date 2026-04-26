@@ -3,6 +3,7 @@ package com.shaw4udev.fitsound;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -32,12 +33,18 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     // VISTAS
     private EditText etMinutos;
@@ -101,7 +108,11 @@ public class MainActivity extends AppCompatActivity {
         spinnerGrafico.setAdapter(adapter);
 
         //RESTAURAR POSICION DEL SPINNER
-        if (savedInstanceState !=null);{
+        if (savedInstanceState !=null){
+            cardioMin = savedInstanceState.getFloat(KEY_CARDIO);
+            fuerzaMin = savedInstanceState.getFloat(KEY_FUERZA);
+            flexibilidadMin = savedInstanceState.getFloat(KEY_FLEX);
+
             spinnerGrafico.setSelection(savedInstanceState.getInt(KEY_SPINNER_POS, 0));
         }
 
@@ -127,6 +138,8 @@ public class MainActivity extends AppCompatActivity {
 
         //Por aqui va el mapa
 
+        SupportMapFragment mapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.mapFragment);
+        mapFragment.getMapAsync(this);
 
 
         //Dibujar grafico inicial con datos restaurados o vacio
@@ -248,10 +261,43 @@ public class MainActivity extends AppCompatActivity {
 
 
     // CALLBACK DEL MAPA
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        LatLng ubicacion = new LatLng(13.70131880212184, -89.2243357518757);
 
+        googleMap.addMarker(new MarkerOptions()
+                .position(ubicacion)
+                .title("Plaza Salvador del Mundo"));
+
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ubicacion, 12f));
+    }
 
     //GUARDAR ESTADO ANTES DE ROTAR
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putFloat(KEY_CARDIO, cardioMin);
+        outState.putFloat(KEY_FUERZA, fuerzaMin);
+        outState.putFloat(KEY_FLEX,flexibilidadMin);
+
+        outState.putInt(KEY_SPINNER_POS, spinnerGrafico.getSelectedItemPosition());
+    }
+
 
     //LIBERAR MEDIAPLAYER AL DESTRUIR LA ACTIVIDAD
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (mediaPlayer != null) {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+            }
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
+
 }
